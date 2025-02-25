@@ -1,0 +1,157 @@
+1. Estructura del proyecto
+mi_proyecto/
+├── api/
+│   ├── categorias.php   # Archivo principal de la API de categorías
+│   ├── config/
+│   │   └── conexion.php  # Configuración de la base de datos
+│   └── models/
+│       └── categoria.php # Clase Categoria
+└── frontend/
+    ├── src/
+    │   ├── app/
+    │   │   ├── app.component.html
+    │   │   ├── app.component.ts
+    │   │   ├── app.module.ts
+    │   │   └── categorias.service.ts
+    │   └── index.html
+    │   └── main.ts
+    └── angular.json
+    └── package.json
+    └── tsconfig.json
+2. categorias.service.ts
+TypeScript
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CategoriasService {
+  private apiUrl = '/api/categorias'; // Ajusta la URL si es necesario
+
+  constructor(private http: HttpClient) { }
+
+  getCategorias(): Observable<any> {
+    return this.http.get(this.apiUrl);
+  }
+
+  crearCategoria(categoria: any): Observable<any> {
+    return this.http.post(this.apiUrl, categoria);
+  }
+}
+3. app.component.ts
+TypeScript
+
+import { Component, OnInit } from '@angular/core';
+import { CategoriasService } from './categorias.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit {
+  categorias: any[] = [];
+  nuevaCategoria: any = {};
+
+  constructor(private categoriasService: CategoriasService) { }
+
+  ngOnInit() {
+    this.cargarCategorias();
+  }
+
+  cargarCategorias() {
+    this.categoriasService.getCategorias().subscribe(
+      (data) => {
+        this.categorias = data.datos || [];
+      },
+      (error) => {
+        console.error('Error al cargar categorías:', error);
+      }
+    );
+  }
+
+  crearCategoria() {
+    this.categoriasService.crearCategoria(this.nuevaCategoria).subscribe(
+      (data) => {
+        console.log('Categoría creada:', data.mensaje);
+        this.cargarCategorias();
+        this.nuevaCategoria = {}; // Limpiar el formulario
+      },
+      (error) => {
+        console.error('Error al crear categoría:', error);
+      }
+    );
+  }
+}
+4. app.component.html
+HTML
+
+<h1>Categorías</h1>
+
+<div id="lista-categorias">
+  <div *ngFor="let categoria of categorias" class="categoria">
+    <h3>{{ categoria.cat_nom }}</h3>
+    <p>{{ categoria.cat_obs }}</p>
+  </div>
+</div>
+
+<h2>Añadir Categoría</h2>
+<form (ngSubmit)="crearCategoria()">
+  <input type="text" name="cat_nom" [(ngModel)]="nuevaCategoria.cat_nom" placeholder="Nombre" required>
+  <input type="text" name="cat_obs" [(ngModel)]="nuevaCategoria.cat_obs" placeholder="Observación" required>
+  <button type="submit">Guardar</button>
+</form>
+5. app.module.ts
+TypeScript
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms'; // Importa FormsModule
+
+import { AppComponent } from './app.component';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    FormsModule // Añade FormsModule a los imports
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+Explicación del código
+categorias.service.ts: Este servicio se encarga de comunicarse con la API. Define los métodos getCategorias() para obtener las categorías y crearCategoria() para crear una nueva categoría.
+app.component.ts: Este componente contiene la lógica principal del frontend.
+categorias: Array que almacena las categorías obtenidas de la API.
+nuevaCategoria: Objeto que almacena los datos de la nueva categoría que se va a crear.
+ngOnInit(): Se llama al iniciar el componente y carga las categorías existentes.
+cargarCategorias(): Obtiene las categorías de la API y las guarda en el array categorias.
+crearCategoria(): Envía los datos de la nueva categoría a la API y recarga la lista de categorías.
+app.component.html: Este archivo define la estructura y el contenido del frontend.
+Muestra la lista de categorías utilizando *ngFor.
+Incluye un formulario para crear nuevas categorías con los campos cat_nom y cat_obs enlazados al objeto nuevaCategoria mediante [(ngModel)].
+El botón "Guardar" llama al método crearCategoria() al hacer clic.
+app.module.ts: Este módulo declara y configura el componente principal (AppComponent). Importa HttpClientModule para poder hacer peticiones HTTP y FormsModule para poder usar el enlace de datos bidireccional con [(ngModel)].
+Pasos para ejecutar el frontend con Angular
+Asegúrate de tener Node.js y npm (o yarn) instalados en tu sistema.
+Instala el CLI de Angular: npm install -g @angular/cli
+Crea un nuevo proyecto de Angular: ng new mi-proyecto
+Navega a la carpeta del proyecto: cd mi-proyecto
+Copia los archivos app.component.html, app.component.ts, app.module.ts y categorias.service.ts en la carpeta src/app de tu proyecto.
+Instala las dependencias necesarias: npm install
+Inicia el servidor de desarrollo: ng serve
+Esto iniciará el servidor de desarrollo de Angular y abrirá la aplicación en tu navegador. Podrás ver la lista de categorías y el formulario para crear nuevas categorías.
+
+Consideraciones adicionales
+Este es un ejemplo básico de frontend con Angular. Para aplicaciones más complejas, se recomienda usar un sistema de gestión de estados como NgRx o Akita.
+Recuerda adaptar la URL de la API (apiUrl) en el servicio categorias.service.ts si es necesario.
+Puedes mejorar este frontend añadiendo funcionalidades como editar y eliminar categorías, validación de formularios y manejo de errores más robusto.
+Espero que esto te ayude a implementar el frontend con Angular. Si tienes alguna otra pregunta, no dudes en preguntar.

@@ -1,0 +1,293 @@
+Estructura del Proyecto:
+
+mi_proyecto/
+├── api/
+│   ├── categorias.php   # Archivo principal de la API de categorías
+│   ├── config/
+│   │   └── conexion.php  # Configuración de la base de datos
+│   └── models/
+│       └── categoria.php # Clase Categoria
+└── frontend/
+    └── index.html       # Archivo principal del frontend
+1. conexion.php (Configuración de la Base de Datos):
+
+PHP
+
+<?php
+    $host = "localhost"; // O la dirección de tu servidor de base de datos
+    $usuario = "tu_usuario";
+    $password = "tu_password";
+    $database = "tu_base_de_datos";
+
+    try {
+        $conexion = new PDO("mysql:host=$host;dbname=$database", $usuario, $password);
+        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    } catch (PDOException $e) {
+        die("Error de conexión: " . $e->getMessage());
+    }
+?>
+Recuerda reemplazar los valores de $host, $usuario, $password y $database con los datos de tu base de datos.
+2. categoria.php (Clase Categoria):
+
+PHP
+
+<?php
+require_once("../config/conexion.php");
+
+class Categoria {
+    private $db;
+
+    public function __construct() {
+        global $conexion;
+        $this->db = $conexion;
+    }
+
+    public function get_categoria() {
+        try {
+            $stmt = $this->db->query("SELECT * FROM categorias");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener categorías: " . $e->getMessage());
+        }
+    }
+
+    public function get_categoria_x_id($id) {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM categorias WHERE cat_id = ?");
+            $stmt->execute([$id]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener categoría: " . $e->getMessage());
+        }
+    }
+
+    public function insert_categoria($nombre, $observacion) {
+        try {
+            $stmt = $this->db->prepare("INSERT INTO categorias (cat_nom, cat_obs) VALUES (?, ?)");
+            $stmt->execute([$nombre, $observacion]);
+            return $this->get_categoria_x_id($this->db->lastInsertId()); // Devuelve la categoría insertada
+        } catch (PDOException $e) {
+            throw new Exception("Error al insertar categoría: " . $e->getMessage());
+        }
+    }
+
+    public function update_categoria($id, $nombre, $observacion) {
+        try {
+            $stmt = $this->db->prepare("UPDATE categorias SET cat_nom = ?, cat_obs = ? WHERE cat_id = ?");
+            $stmt->execute([$nombre, $observacion, $id]);
+            return $this->get_categoria_x_id($id); // Devuelve la categoría actualizada
+        } catch (PDOException $e) {
+            throw new Exception("Error al actualizar categoría: " . $e->getMessage());
+        }
+    }
+
+    public function delete_categoria($id) {
+        try {
+            $stmt = $this->db->prepare("DELETE FROM categorias WHERE cat_id = ?");
+            $stmt->execute([$id]);
+        } catch (PDOException $e) {
+            throw new Exception("Error al eliminar categoría: " . $e->getMessage());
+        }
+    }
+}
+?>
+He añadido manejo de excepciones con try-catch en todos los métodos para capturar errores de la base de datos y lanzar excepciones.
+Los métodos insert_categoria y update_categoria ahora devuelven la categoría recién insertada o actualizada, respectivamente.
+3. categorias.php (API de Categorías):
+
+PHP
+
+<?php
+header('Content-Type: application/json');
+
+require_once("../config/conexion.php");
+require_once("../models/categoria.php");
+$categoria = new Categoria();
+
+function enviarRespuesta($codigo, $mensaje, $datos = null) {
+    http_response_code($codigo);
+    echo json_encode(['mensaje' => $mensaje, 'datos' => $datos]);
+    exit;
+}
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+switch ($method) {
+    case 'GET':
+        if (isset($_GET['id'])) {
+            try {
+                $datos = $categoria->get_categoria_x_id($_GET['id']);
+                if ($datos) {
+                    enviarRespuesta(200, "Categoría obtenida", $datos);
+                } else {
+                    enviarRespuesta(404, "Categoría no encontrada");
+                }
+            } catch (Exception $e) {
+                enviarRespuesta(500, "Error al obtener la categoría: " . $e->getMessage());
+            }
+        } else {
+            try {
+                $datos = $categoria->get_categoria();
+                enviarRespuesta(200, "Categorías obtenidas", $datos);
+            } catch (Exception $e) {
+                enviarRespuesta(500, "Error al obtener las categorías: " . $e->getMessage());
+            }
+        }
+        break;
+
+    case 'POST':
+        try {
+            $body = json_decode(file_get_contents("php://input"), true);
+            if (empty($body['cat_nom']) || empty($body['cat_obs'])) {
+                enviarRespuesta(400, "Datos de entrada inválidos");
+            }
+
+            $datos = $categoria->insert_categoria($body['cat_nom'], $body['cat_obs']);
+            enviarRespuesta(201, "Categoría creada", $datos);
+        } catch (Exception $e) {
+            enviarRespuesta(500, "Error al crear la categoría: " . $e->getMessage());
+        }
+        break;
+
+    case 'PUT':
+        try {
+            $body = json_decode(file_get_contents("php://input"), true);
+            if (empty($body['cat_id']) || empty($body['cat_nom']) || empty($body['cat_obs'])) {
+                enviarRespuesta(400, "Datos de entrada inválidos");
+            }
+
+            $datos = $categoria->update_categoria($body['cat_id'], $body['cat_nom'], $body['cat_obs']);
+            enviarRespuesta(200, "Categoría actualizada", $datos);
+        } catch (Exception $e) {
+            enviarRespuesta(500, "Error al actualizar la categoría: " . $e->getMessage());
+        }
+        break;
+
+    case 'DELETE':
+        try {
+            $body = json_decode(file_get_contents("php://input"), true);
+            if (empty($body['cat_id'])) {
+                enviarRespuesta(400, "ID de categoría inválido");
+            }
+
+            $categoria->delete_categoria($body['cat_id']);
+            enviarRespuesta(204, "Categoría eliminada");
+        } catch (Exception $e) {
+            enviarRespuesta(500, "Error al eliminar la categoría: " . $e->getMessage());
+        }
+        break;
+
+    default:
+        enviarRespuesta(405, "Método no permitido");
+        break;
+}
+?>
+He añadido validación de datos de entrada en los casos POST, PUT y DELETE.
+He añadido bloques try-catch para capturar excepciones y enviar respuestas de error adecuadas.
+4. index.html (Frontend):
+
+HTML
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gestión de Categorías</title>
+    <style>
+        /* Estilos básicos para mejorar la apariencia */
+        body {
+            font-family: sans-serif;
+        }
+        #lista-categorias {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .categoria {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Categorías</h1>
+
+    <div id="lista-categorias">
+        </div>
+
+    <h2>Añadir Categoría</h2>
+    <form id="form-categoria">
+        <input type="text" id="cat_nom" placeholder="Nombre" required>
+        <input type="text" id="cat_obs" placeholder="Observación" required>
+        <button type="submit">Guardar</button>
+    </form>
+
+    <script>
+        const listaCategorias = document.getElementById('lista-categorias');
+        const formCategoria = document.getElementById('form-categoria');
+
+        // Función para cargar las categorías
+        function cargarCategorias() {
+            fetch('/api/categorias')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.datos) {
+                        listaCategorias.innerHTML = ''; // Limpiar la lista
+                        data.datos.forEach(categoria => {
+                            const div = document.createElement('div');
+                            div.className = 'categoria'; // Añadir clase para estilos
+                            div.innerHTML = `<h3>${categoria.cat_nom}</h3><p>${categoria.cat_obs}</p>`;
+                            listaCategorias.appendChild(div);
+                        });
+                    } else {
+                        console.error("Error al cargar categorías:", data ? data.mensaje : "Respuesta vacía");
+                        listaCategorias.innerHTML = '<p>Error al cargar categorías.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error("Error en la petición:", error);
+                    listaCategorias.innerHTML = '<p>Error en la petición.</p>';
+                });
+        }
+
+        // Evento para enviar el formulario
+        formCategoria.addEventListener('submit', (event) => {
+            event.preventDefault(); // Evitar que se recargue la página
+
+            const cat_nom = document.getElementById('cat_nom').value;
+            const cat_obs = document.getElementById('cat_obs').value;
+
+            fetch('/api/categorias', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cat_nom, cat_obs })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.datos) {
+                        console.log(data.mensaje); // Mostrar mensaje de éxito
+                        cargarCategorias(); // Recargar la lista de categorías
+                        formCategoria.reset(); // Limpiar el formulario
+                    } else {
+                        console.error("Error al crear categoría:", data ? data.mensaje : "Respuesta vacía");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error en la petición:", error);
+                });
+        });
+
+        // Cargar las categorías al cargar la página
+        cargarCategorias();
+    </script>
+</body>
+</html>
+Cambios y mejoras:
+
+Estilos CSS básicos: Se han añadido algunos estilos CSS básicos para mejorar la apariencia de la página.
+Manejo de errores en cargarCategorias(): Se ha añadido un bloque if para verificar si la respuesta de la API contiene datos antes de intentar mostrarlos. También se ha añadido un bloque .catch para capturar errores en la petición fetch.
+Manejo de errores en el evento submit: Se ha añadido un bloque if para verificar si la respuesta de la API contiene datos antes de mostrar el mensaje de éxito. También se ha añadido un bloque .catch para capturar errores en la petición fetch.
+Clase categoria: Se ha añadido la clase categoria a los div que contienen la información de cada categoría para poder aplicar estilos específicos.
+Campos required: Se han añadido los atributos required a los campos del formulario para que sean obligatorios.
+Con estos cambios, el frontend es más robusto y ofrece una mejor experiencia de usuario. Recuerda que este es un ejemplo básico y se puede mejorar aún más utilizando un framework de frontend como React, Angular o Vue.js.

@@ -1,0 +1,123 @@
+TypeScript
+
+import { Component, OnInit } from '@angular/core';
+import { CategoriasService } from './categorias.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms'; // Importa FormBuilder, FormGroup y Validators
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit {
+  categorias: any[] = [];
+  formCategoria!: FormGroup; // Declara el formulario
+
+  constructor(
+    private categoriasService: CategoriasService,
+    private fb: FormBuilder // Inyecta FormBuilder
+  ) {
+    this.formCategoria = this.fb.group({ // Crea el formulario con validaciones
+      cat_nom: ['', Validators.required],
+      cat_obs: ['', Validators.required]
+    });
+  }
+
+  ngOnInit() {
+    this.cargarCategorias();
+  }
+
+  cargarCategorias() {
+    this.categoriasService.getCategorias().subscribe(
+      (data) => {
+        this.categorias = data.datos || [];
+      },
+      (error) => {
+        console.error('Error al cargar categorías:', error);
+      }
+    );
+  }
+
+  crearCategoria() {
+    if (this.formCategoria.valid) { // Verifica si el formulario es válido
+      this.categoriasService.crearCategoria(this.formCategoria.value).subscribe(
+        (data) => {
+          console.log('Categoría creada:', data.mensaje);
+          this.cargarCategorias();
+          this.formCategoria.reset(); // Limpia el formulario
+        },
+        (error) => {
+          console.error('Error al crear categoría:', error);
+        }
+      );
+    } else {
+      console.log('Formulario inválido. Por favor, complete todos los campos.');
+    }
+  }
+}
+HTML
+
+<h1>Categorías</h1>
+
+<div id="lista-categorias">
+  <div *ngFor="let categoria of categorias" class="categoria">
+    <h3>{{ categoria.cat_nom }}</h3>
+    <p>{{ categoria.cat_obs }}</p>
+  </div>
+</div>
+
+<h2>Añadir Categoría</h2>
+<form [formGroup]="formCategoria" (ngSubmit)="crearCategoria()">
+  <input type="text" formControlName="cat_nom" placeholder="Nombre" required>
+  <div *ngIf="formCategoria.get('cat_nom')?.invalid && formCategoria.get('cat_nom')?.touched">
+    <p class="error">El nombre es requerido.</p>
+  </div>
+
+  <input type="text" formControlName="cat_obs" placeholder="Observación" required>
+  <div *ngIf="formCategoria.get('cat_obs')?.invalid && formCategoria.get('cat_obs')?.touched">
+    <p class="error">La observación es requerida.</p>
+  </div>
+
+  <button type="submit">Guardar</button>
+</form>
+TypeScript
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'; // Importa ReactiveFormsModule
+
+import { AppComponent } from './app.component';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule // Añade ReactiveFormsModule a los imports
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+Cambios y mejoras:
+
+Validación de formularios: Se ha añadido validación de formularios utilizando ReactiveFormsModule. Los campos cat_nom y cat_obs son requeridos. Se muestran mensajes de error si los campos no son válidos y se han intentado enviar.
+Formulario reactivo: Se ha creado un formulario reactivo utilizando FormBuilder y FormGroup. Los campos del formulario están enlazados al formulario reactivo mediante formControlName.
+Manejo de errores: Se ha añadido un bloque if en el método crearCategoria() para verificar si el formulario es válido antes de enviar los datos a la API. Se muestra un mensaje en la consola si el formulario no es válido.
+Con estos cambios, el frontend es más robusto y ofrece una mejor experiencia de usuario. Se han añadido validaciones para asegurar que los datos enviados a la API sean correctos.
+
+Recuerda que para usar ReactiveFormsModule debes importarlo en el módulo de tu aplicación (app.module.ts).
+
+Espero que esto te ayude a implementar el frontend con Angular y las consideraciones adicionales. Si tienes alguna otra pregunta, no dudes en preguntar.
+
+
+
+
+
+
+
+

@@ -1,0 +1,103 @@
+1. Estructura del Proyecto (con Frontend):
+
+mi_proyecto/
+├── api/
+│   ├── categorias.php   # Archivo principal de la API de categorías
+│   ├── config/
+│   │   └── conexion.php  # Configuración de la base de datos
+│   └── models/
+│       └── categoria.php # Clase Categoria
+└── frontend/
+    └── index.html       # Archivo principal del frontend
+2. index.html (Frontend):
+
+HTML
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gestión de Categorías</title>
+</head>
+<body>
+    <h1>Categorías</h1>
+
+    <div id="lista-categorias">
+        </div>
+
+    <h2>Añadir Categoría</h2>
+    <form id="form-categoria">
+        <input type="text" id="cat_nom" placeholder="Nombre">
+        <input type="text" id="cat_obs" placeholder="Observación">
+        <button type="submit">Guardar</button>
+    </form>
+
+    <script>
+        const listaCategorias = document.getElementById('lista-categorias');
+        const formCategoria = document.getElementById('form-categoria');
+
+        // Función para cargar las categorías
+        function cargarCategorias() {
+            fetch('/api/categorias')
+                .then(response => response.json())
+                .then(data => {
+                    listaCategorias.innerHTML = ''; // Limpiar la lista
+                    data.datos.forEach(categoria => {
+                        const div = document.createElement('div');
+                        div.innerHTML = `<h3>${categoria.cat_nom}</h3><p>${categoria.cat_obs}</p>`;
+                        listaCategorias.appendChild(div);
+                    });
+                });
+        }
+
+        // Evento para enviar el formulario
+        formCategoria.addEventListener('submit', (event) => {
+            event.preventDefault(); // Evitar que se recargue la página
+
+            const cat_nom = document.getElementById('cat_nom').value;
+            const cat_obs = document.getElementById('cat_obs').value;
+
+            fetch('/api/categorias', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cat_nom, cat_obs })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.mensaje); // Mostrar mensaje de éxito
+                    cargarCategorias(); // Recargar la lista de categorías
+                    formCategoria.reset(); // Limpiar el formulario
+                });
+        });
+
+        // Cargar las categorías al cargar la página
+        cargarCategorias();
+    </script>
+</body>
+</html>
+3. categorias.php (API de Categorías):
+
+No necesitas hacer cambios en el código PHP de la API.
+
+Explicación del Frontend (index.html):
+
+lista-categorias: Un <div> donde se mostrarán las categorías.
+form-categoria: Un formulario para añadir nuevas categorías.
+cargarCategorias(): Una función que realiza una petición GET a la API para obtener las categorías y las muestra en lista-categorias.
+Evento submit del formulario: Cuando se envía el formulario, se evita que se recargue la página, se obtienen los valores de los campos, se realiza una petición POST a la API para crear la nueva categoría, se recarga la lista de categorías y se limpia el formulario.
+Llamada a cargarCategorias(): Se llama a esta función al cargar la página para mostrar las categorías existentes.
+Cómo ejecutar el ejemplo:
+
+Asegúrate de tener un servidor web (como Apache o Nginx) configurado para servir los archivos de tu proyecto.
+Copia los archivos conexion.php, categoria.php y categorias.php en la carpeta api de tu proyecto.
+Copia el archivo index.html en la carpeta frontend de tu proyecto.
+Abre el archivo index.html en tu navegador.
+Ahora podrás ver la lista de categorías (si hay alguna) y un formulario para añadir nuevas categorías. Al enviar el formulario, se creará la nueva categoría en la base de datos y se actualizará la lista en el frontend.
+
+Consideraciones adicionales:
+
+Este es un ejemplo básico de frontend sin frameworks. Para aplicaciones más complejas, es recomendable usar un framework como React, Angular o Vue.js.
+Puedes mejorar este frontend añadiendo funcionalidades como editar y eliminar categorías.
+Recuerda implementar medidas de seguridad en tu API, como validación de entrada y autenticación.
+Espero que este ejemplo te sea útil. Si tienes alguna otra pregunta, no dudes en preguntar.
