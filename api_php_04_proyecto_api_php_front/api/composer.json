@@ -1,0 +1,15 @@
+{
+    "name": "admin/api",
+    "autoload": {
+        "psr-4": {
+            "Admin\\Api\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "SenaProfeAlbeiro",
+            "email": "earamos42@misena.edu.co"
+        }
+    ],
+    "require": {}
+}
