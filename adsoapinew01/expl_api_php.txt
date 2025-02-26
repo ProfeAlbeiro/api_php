@@ -26,8 +26,8 @@
                                                     (generalmente una aplicación frontend) que la respuesta del servidor estará en formato JSON. 
                                                     Es crucial para que el cliente pueda interpretar correctamente los datos.
 
---- require_once("../config/conexion.php");      :  Incluye el archivo conexion.php. Este archivo probablemente contiene la configuración para la 
-                                                    conexión a la base de datos (credenciales, nombre de la base de datos, etc.).                                                
+--- require_once("../config/conexion.php");      :  Incluye el archivo conexion.php. Este archivo contiene la configuración para la conexión a la base
+                                                    de datos (credenciales, nombre de la base de datos, etc.).                                                
 
 --- require_once("../models/categoria.php");     :  Incluye el archivo categoria.php. Este archivo define la clase Categoria, que contiene los métodos 
                                                     para interactuar con la tabla de categorías en la base de datos (insertar, actualizar, eliminar, 
@@ -47,8 +47,8 @@
                                                     datos enviados mediante POST, PUT o DELETE, que generalmente contienen los datos en formato JSON.
 
 --- json_decode(..., true)                       :  Decodifica la cadena JSON recibida y la convierte en un array asociativo de PHP. El segundo 
-                                                    argumento true asegura que el resultado sea un array asociativo en lugar de un objeto. Los datos del
-                                                    JSON se almacenan en la variable $body.
+                                                    argumento 'true' asegura que el resultado sea un array asociativo en lugar de un objeto. Los datos
+                                                    del JSON se almacenan en la variable '$body'.
 
 |--------------------------------------------------------------------------------------------------------------------------------------------------------|
 |-- 03. Switch para las Operaciones: --------------------------------------------------------------------------------------------------------------------|
@@ -75,11 +75,11 @@
             16.              echo json_encode($datos);
             17.              break;
 
---- $categoria->get_categoria()                  :  Llama al método get_categoria() de la clase Categoria. Este método probablemente ejecuta una 
-                                                    consulta SQL para obtener todas las categorías de la base de datos. 
+--- $categoria->get_categoria()                  :  Llama al método 'get_categoria()' de la clase 'Categoria'. Este método ejecuta una consulta SQL
+                                                    para obtener todas las categorías de la base de datos. 
 
---- echo json_encode($datos)                     :  Codifica el array $datos (que contiene las categorías) en formato JSON y lo envía como respuesta al
-                                                    cliente.
+--- echo json_encode($datos)                     :  Codifica el array '$datos' (que contiene las categorías) en formato JSON y lo envía como respuesta
+                                                    al cliente.
 
 
 --- 04.02. GetId: Obtiene una categoría por ID.
@@ -89,7 +89,7 @@
             21.              echo json_encode($datos);
             22.              break;
 
---- $body["cat_id"]                             :   Obtiene el valor del ID de la categoría del array $body (que contiene los datos JSON de la 
+--- $body["cat_id"]                             :   Obtiene el valor del ID de la categoría del array '$body' (que contiene los datos JSON de la 
                                                     solicitud).
 
 --- $categoria->get_categoria_x_id(...)         :   Llama al método get_categoria_x_id() de la clase Categoria, pasando el ID como argumento. Este 
