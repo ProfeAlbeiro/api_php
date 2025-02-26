@@ -1,7 +1,8 @@
 <?php
-require_once '../controllers/LocationController.php';
+require_once 'controllers/LocationController.php';
+require_once 'controllers/LocationController.php';
 
-$conn = require_once '../config/conexion.php'; // Obtener la conexión a la base de datos
+$conn = require_once 'config/conexion.php'; // Obtener la conexión a la base de datos
 
 $locationController = new LocationController($conn);
 
