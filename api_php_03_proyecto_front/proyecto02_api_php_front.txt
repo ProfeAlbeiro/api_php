@@ -1,0 +1,46 @@
+|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+|---------------------------------------------------------------------- PROYECTO 02 ---------------------------------------------------------------------|
+|----------------------------------------------------------------- API - PHP - FRONTEND -----------------------------------------------------------------|
+|-- Autor: Albeiro Ramos. Instructor SENA ---------------------------------------------------------------------------------------------------------------|
+|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-- 01. Estructura del Proyecto: ------------------------------------------------------------------------------------------------------------------------|
+|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+            mi-proyecto/                            #   Carpeta raíz del proyecto
+            ├── api/                                #   Contiene la lógica del backend (API REST).
+            │   ├── config/                         
+            │   │   └── conexion.php                #   Configuración de la conexión a la base de datos.
+            │   ├── models/             
+            │   │   ├── Cliente.php                 #   Modelo de Datos del Cliente
+            │   │   └── Producto.php                #   Modelo de Datos del Producto
+            │   ├── controllers/                    
+            │   │   ├── ProductoController.php      #   Controlador del Producto que maneja las solicitudes y respuestas de la API
+            │   │   └── ClienteController.php       #   Controlador del Cliente que maneja las solicitudes y respuestas de la API
+            │   ├── routes/                         
+            │   │   └── api.php                     #   Definición de las rutas de la API
+            │   └── index.php                       #   Entrada de la API
+            ├── frontend/                           #   Contiene el código del frontend
+            │   ├── assets/                         #   Recursos estáticos
+            │   │   ├── css/
+            │   │   │   └── estilos.css             #   Estilos CSS
+            │   │   ├── js/
+            │   │   │   └── app.js                  #   Scripts JS
+            │   │   └── images/                     
+            │   ├── views/                          
+            │   │   ├── clientes.php                #   Vista HTML de los Clientes
+            │   │   └── productos.php               #   Vista HTML de los Productos
+            │   └── index.php                       #   Entrada principal del frontend
+            ├── config/                                
+            │   └── app.php                         #   Configuración general de la apliación
+            ├── public/
+            │   └── index.php                       #   Entrada principal de la aplicación (Redirige a 'frontend/index.php' o 'api/index.php')
+            ├── vendor/                             #   Dependencias composer
+            │   └── ... (dependencias de Composer)
+            ├── composer.json                       #   Archivo de configuración de composer
+            └── composer.lock                       #   Archivo de configuración de composer
+
+|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-- 02. Estructura del Proyecto: ------------------------------------------------------------------------------------------------------------------------|
+|--------------------------------------------------------------------------------------------------------------------------------------------------------|
