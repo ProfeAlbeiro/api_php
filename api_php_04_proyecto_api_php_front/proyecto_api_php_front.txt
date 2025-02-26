@@ -40,18 +40,12 @@
             ├── composer.json                       #   Archivo de configuración de composer
             └── composer.lock                       #   Archivo de configuración de composer
 
+
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|-- 02. Instalación de composer en el proyecto: ---------------------------------------------------------------------------------------------------------|
-|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-- 02. api/: ----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
-
-
-
-|--------------------------------------------------------------------------------------------------------------------------------------------------------|
-|-- 03. api/: -------------------------------------------------------------------------------------------------------------------------------------------|
-|--------------------------------------------------------------------------------------------------------------------------------------------------------|
-
---- 03.01. config/conexion.php                      :   Este archivo contiene la configuración de la conexión a la base de datos. Se establecen las 
+--- 02.01. config/conexion.php                      :   Este archivo contiene la configuración de la conexión a la base de datos. Se establecen las 
                                                         credenciales de la base de datos y se crea una instancia de PDO para la conexión.             
              
              1.  <?php
@@ -69,7 +63,7 @@
             13.      }
             14.  ?>
 
---- 03.02. models/Location.php                      :   Define la clase 'Location' con métodos para interactuar con la tabla "location" de la base de datos.
+--- 02.02. models/Location.php                      :   Define la clase 'Location' con métodos para interactuar con la tabla "location" de la base de datos.
              
              1.  <?php
              2.  class Location {
@@ -107,4 +101,124 @@
             34.  }
             35.  ?>
 
---- 03.04. controllers/LocationController.php      :   Define la clase 'Location' con métodos para interactuar con la tabla "location" de la base de datos.
+--- 02.03. controllers/LocationController.php      :   .
+
+             1.  <?php
+             2.  require_once '../models/Location.php';
+             3.  
+             4.  class LocationController {
+             5.      private $location;
+             6.  
+             7.      public function __construct($db) {
+             8.          $this->location = new Location($db);
+             9.      }
+            10. 
+            11.      public function listarLocations() {
+            12.          $locations = $this->location->obtenerTodos();
+            13.          echo json_encode($locations);
+            14.      }
+            15.  
+            16.      public function obtenerLocation($id) {
+            17.          $location = $this->location->obtenerPorId($id);
+            18.          echo json_encode($location);
+            19.      }
+            20.  
+            21.      public function crearLocation($data) {
+            22.          $name = $data['name'];
+            23.          $city = $data['city'];
+            24.          $state = $data['state'];
+            25.          $photo = $data['photo'];
+            26.          $availableUnits = $data['availableUnits'];
+            27.          $wifi = $data['wifi'];
+            28.          $laundry = $data['laundry'];
+            29.          $resultado = $this->location->crear($name, $city, $state, $photo, $availableUnits, $wifi, $laundry);
+            30.          echo json_encode(['success' => $resultado]);
+            31.     }
+            32.  
+            33.     public function actualizarLocation($id, $data) {
+            34.          $name = $data['name'];
+            35.          $city = $data['city'];
+            36.          $state = $data['state'];
+            37.          $photo = $data['photo'];
+            38.          $availableUnits = $data['availableUnits'];
+            39.          $wifi = $data['wifi'];
+            40.          $laundry = $data['laundry'];
+            41.          $resultado = $this->location->actualizar($id, $name, $city, $state, $photo, $availableUnits, $wifi, $laundry);
+            42.          echo json_encode(['success' => $resultado]);
+            43.     }
+            44.  
+            45.     public function eliminarLocation($id) {
+            46.          $resultado = $this->location->eliminar($id);
+            47.          echo json_encode(['success' => $resultado]);
+            48.      }
+            49.  }
+            50.  ?>
+
+--- 02.04. routes/api.php                           :   .
+
+             1.  <?php
+             2.  require_once '../controllers/LocationController.php';
+             3.  
+             4.  $conn = require_once '../config/conexion.php'; // Obtener la conexión a la base de datos
+             5.  
+             6.  $locationController = new LocationController($conn);
+             7.  
+             8.  $method = $_SERVER['REQUEST_METHOD'];
+             9.  $path = $_SERVER['PATH_INFO'] ?? '/';
+            10.  
+            11.  switch ($method . ' ' . $path) {
+            12.      case 'GET /locations':
+            13.          $locationController->listarLocations();
+            14.          break;
+            15.      case 'GET /locations/':
+            16.          $id = $_GET['id'];
+            17.          $locationController->obtenerLocation($id);
+            18.          break;
+            19.      case 'POST /locations':
+            20.          $data = json_decode(file_get_contents("php://input"), true);
+            21.          $locationController->crearLocation($data);
+            22.          break;
+            23.      case 'PUT /locations/':
+            24.          $id = $_GET['id'];
+            25.          $data = json_decode(file_get_contents("php://input"), true);
+            26.          $locationController->actualizarLocation($id, $data);
+            27.          break;
+            28.      case 'DELETE /locations/':
+            29.          $id = $_GET['id'];
+            30.          $locationController->eliminarLocation($id);
+            31.          break;
+            32.      default:
+            33.          http_response_code(404);
+            34.          echo json_encode(['mensaje' => 'Ruta no encontrada']);
+            35.          break;
+            36.  }
+            37.  ?>
+
+--- 02.05. index.php                               :   .
+
+             1.  <?php
+             2.  header('Content-Type: application/json');
+             3.  require_once '../vendor/autoload.php';
+             4.  require_once 'routes/api.php';
+             5.  ?>
+
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-- 03. public/: ----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+--- 03.01. index.php                               :   .
+
+             1.  <?php
+             2.  require_once '../api/index.php';
+             3.  ?>
+
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-- 04. composer.json: ----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+             1.  {
+             2.      "require": {
+             3.          "php": ">=7.4"
+             4.      }
+             5.  }
+             
