@@ -52,13 +52,58 @@
 |-- 03. Explicación de archivos y carpetas de: --> api/: ------------------------------------------------------------------------------------------------|
 |--------------------------------------------------------------------------------------------------------------------------------------------------------|
 
---- 02.01. config/conexion.php      :   Este archivo contiene la configuración de la conexión a la base de datos.
-             
+--- 03.01. config/conexion.php      :   Este archivo contiene la configuración de la conexión a la base de datos. Se establecen las credenciales de la 
+                                        base de datos y se crea una instancia de PDO para la conexión.             
              
              1.  <?php
-             2.  
-             3.      header('Content-Type: aplication/json');
-             4.      require_once("../config/conexion.php");
-             5.      require_once("../models/categoria.php");
+             2.      $servername = "localhost";
+             3.      $username = "usuario";
+             4.      $password = "contraseña";
+             5.      $dbname = "basededatos";
              6.  
-             7.      $categoria = new Categoria();
+             7.      try {
+             8.          $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+             9.          $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            10.          return $conn;
+            11.      } catch(PDOException $e) {
+            12.          echo "Error de conexión: " . $e->getMessage();
+            13.      }
+            14.  ?>
+
+--- 03.02. models/Producto.php      :   Define la clase Producto con métodos para interactuar con la tabla "productos" de la base de datos.
+             
+             1.  <?php
+             2.  class Producto {
+             3.      private $conn;
+             4.  
+             5.      public function __construct($db) {
+             6.          $this->conn = $db;
+             7.      }
+             8.  
+             9.      public function obtenerTodos() {
+            10.          $stmt = $this->conn->query("SELECT * FROM productos");
+            11.          return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            12.      }
+
+    public function obtenerPorId($id) {
+        $stmt = $this->conn->prepare("SELECT * FROM productos WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function crear($nombre, $descripcion, $precio) {
+        $stmt = $this->conn->prepare("INSERT INTO productos (nombre, descripcion, precio) VALUES (?, ?, ?)");
+        return $stmt->execute([$nombre, $descripcion, $precio]);
+    }
+
+    public function actualizar($id, $nombre, $descripcion, $precio) {
+        $stmt = $this->conn->prepare("UPDATE productos SET nombre = ?, descripcion = ?, precio = ? WHERE id = ?");
+        return $stmt->execute([$nombre, $descripcion, $precio, $id]);
+    }
+
+    public function eliminar($id) {
+        $stmt = $this->conn->prepare("DELETE FROM productos WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+}
+?>
