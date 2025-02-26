@@ -21,8 +21,8 @@ SET time_zone = "+00:00";
 -- Base de datos: `adsoapi3`
 --
 
-CREATE DATABASE ADSOAPI3;
-USE ADSOAPI3;
+CREATE DATABASE DB_API_PHP;
+USE DB_API_PHP;
 
 -- --------------------------------------------------------
 
