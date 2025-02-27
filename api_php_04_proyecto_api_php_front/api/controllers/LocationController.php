@@ -1,5 +1,5 @@
 <?php
-require_once '../models/Location.php';
+require_once 'models/Location.php';
 
 class LocationController {
     private $location;
