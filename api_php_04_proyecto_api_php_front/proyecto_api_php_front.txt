@@ -25,9 +25,8 @@
             │   ├── models/                         
             │   │   └── Location.php                #   Modelo de Datos del 'Location'
             │   ├── controllers/                                
-            │   │   └── LocationController.php       #   Controlador del modelo 'Location' que maneja las solicitudes y respuestas de la API
-            │   ├── routes/                         
-            │   │   └── api.php                     #   Definición de las rutas de la API
+            │   │   └── LocationController.php      #   Controlador del modelo 'Location' que maneja las solicitudes y respuestas de la API            
+            |   ├── routes.php                      #   Definición de las rutas de la API
             │   └── index.php                       #   Entrada de la API
             ├── frontend/                           #   Contiene el código del frontend
             │   ├── assets/                         #   Recursos estáticos
@@ -44,10 +43,8 @@
             │   └── app.php                         #   Configuración general de la apliación
             ├── public/
             │   └── index.php                       #   Entrada principal de la aplicación (Redirige a 'frontend/index.php' o 'api/index.php')
-            ├── vendor/                             #   Dependencias composer
-            │   └── ... (dependencias de Composer)
-            ├── composer.json                       #   Archivo de configuración de composer
-            └── composer.lock                       #   Archivo de configuración de composer
+            ├── core /                              #   Dependencias composer
+                └── Router.php                      #   Maneja el enrutamiento de las solicitudes a los controladores.
 
 
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -109,7 +106,7 @@
             34.  }
             35.  ?>
 
---- 02.03. controllers/LocationController.php      :   Maneja las solicitudes relacionadas con ubicaciones y llama a los métodos del modelo 'Location'.
+--- 02.03. controllers/LocationController.php       :   Maneja las solicitudes relacionadas con ubicaciones y llama a los métodos del modelo 'Location'.
 
              1.  <?php
              2.  require_once '../models/Location.php';
@@ -162,92 +159,101 @@
             49.  }
             50.  ?>
 
---- 02.04. routes/api.php                           :   Define las rutas de la API y las asocia con los métodos del controlador.
+--- 02.04. routes.php                               :   Define las rutas de la API y las asocia con los métodos del controlador.
 
              1.  <?php
-             2.  require_once '../controllers/LocationController.php';
-             3.  
-             4.  $conn = require_once '../config/conexion.php'; // Obtener la conexión a la base de datos
+             2.  require_once 'controllers/LocationController.php';
+             3.  require_once '../core/Router.php';
+             4.  require_once '../config/conexion.php';
              5.  
-             6.  $locationController = new LocationController($conn);
+             6.  $conn = conexion(); // Obtener la conexión a la base de datos
              7.  
-             8.  $method = $_SERVER['REQUEST_METHOD'];
-             9.  $path = $_SERVER['PATH_INFO'] ?? '/';
-            10.  
-            11.  switch ($method . ' ' . $path) {
-            12.      case 'GET /locations':
-            13.          $locationController->listarLocations();
-            14.          break;
-            15.      case 'GET /locations/':
-            16.          $id = $_GET['id'];
-            17.          $locationController->obtenerLocation($id);
-            18.          break;
-            19.      case 'POST /locations':
-            20.          $data = json_decode(file_get_contents("php://input"), true);
-            21.          $locationController->crearLocation($data);
-            22.          break;
-            23.      case 'PUT /locations/':
-            24.          $id = $_GET['id'];
-            25.          $data = json_decode(file_get_contents("php://input"), true);
-            26.          $locationController->actualizarLocation($id, $data);
-            27.          break;
-            28.      case 'DELETE /locations/':
-            29.          $id = $_GET['id'];
-            30.          $locationController->eliminarLocation($id);
-            31.          break;
-            32.      default:
-            33.          http_response_code(404);
-            34.          echo json_encode(['mensaje' => 'Ruta no encontrada']);
-            35.          break;
-            36.  }
-            37.  ?>
+             8.  $router = new Router();
+             9.  
+            10.  $router->addRoute('GET', '/locations', 'LocationController', 'listarLocations', $conn);
+            11.  $router->addRoute('GET', '/locations/{id}', 'LocationController', 'obtenerLocation', $conn);
+            12.  $router->addRoute('POST', '/locations', 'LocationController', 'crearLocation', $conn);
+            13.  $router->addRoute('PUT', '/locations/{id}', 'LocationController', 'actualizarLocation', $conn);
+            14.  $router->addRoute('DELETE', '/locations/{id}', 'LocationController', 'eliminarLocation', $conn);
+            15.  
+            16.  $router->route();
+            17.  ?>
 
 --- 02.05. index.php                               :   Punto de entrada principal de la API.
 
              1.  <?php
              2.  header('Content-Type: application/json');
-             3.  require_once '../vendor/autoload.php';
-             4.  require_once 'routes/api.php';
-             5.  ?>
+             3.  require_once 'routes.php';
+             4.  ?>
 
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|-- 03. public/: -------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-- 03. core/: -------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
---- 03.01. index.php                               :   Redirige todas las solicitudes a la API.
+--- 03.01. Router.php                               :   Maneja el enrutamiento de las solicitudes
 
              1.  <?php
-             2.     require_once '../api/index.php';
-             3.  ?>
-
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|-- 04. composer.json: -------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
---- 04.01. composer.json                              :   Redirige todas las solicitudes a la API.
-
-             1.  {
-             2.      "require": {
-             3.          "php": ">=7.4"
-             4.      }
-             5.  }
-
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|-- 05. Instalación de dependencias: -----------------------------------------------------------------------------------------------------------------------------------------------|
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
---- 05.02. Instalar 'Composer' (Manejador de dependencias php) si no está instalado (https://getcomposer.org/)
-
---- 05.01. Abrir la terminal en la raíz del proyecto:
-
-             PS ..\..> composer init
-
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|-- 06. Uso: -----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
---- 06.01. Acceder a 'public/index.php' desde tu navegador o cliente HTTP
-
---- 06.02. Utilizar las rutas definidas en 'routes/api.php' para interactuar con la API.
-
-
+             2.  class Router {
+             3.      private $routes = [];
+             4.  
+             5.      public function addRoute($method, $path, $controller, $action, $db) {
+             6.          $this->routes[] = [
+             7.              'method' => $method,
+             8.              'path' => $path,
+             9.              'controller' => $controller,
+            10.              'action' => $action,
+            11.              'db' => $db
+            12.          ];
+            13.      }
+            14.  
+            15.      public function route() {
+            16.          $method = $_SERVER['REQUEST_METHOD'];
+            17.          $path = $_SERVER['PATH_INFO'] ?? '/';
+            18.  
+            19.          foreach ($this->routes as $route) {
+            20.              if ($route['method'] === $method && $this->matchPath($route['path'], $path)) {
+            21.                  require_once 'controllers/' . $route['controller'] . '.php'; // Incluir el controlador
+            22.                  $controller = new $route['controller']($route['db']);
+            23.                  $action = $route['action'];
+            24.                  $controller->$action($this->getParams($route['path'], $path));
+            25.                  return;
+            26.              }
+            27.          }
+            28.  
+            29.          http_response_code(404);
+            30.          echo json_encode(['mensaje' => 'Ruta no encontrada']);
+            31.      }
+            32.  
+            33.      private function matchPath($routePath, $requestPath) {
+            34.          $routeParts = explode('/', trim($routePath, '/'));
+            35.          $requestParts = explode('/', trim($requestPath, '/'));
+            36.  
+            37.          if (count($routeParts) !== count($requestParts)) {
+            38.              return false;
+            39.          }
+            40.  
+            41.          for ($i = 0; $i < count($routeParts); $i++) {
+            42.              if ($routeParts[$i] !== $requestParts[$i] && substr($routeParts[$i], 0, 1) !== '{') {
+            43.                  return false;
+            44.              }
+            45.          }
+            46.  
+            47.          return true;
+            48.      }
+            49.  
+            50.      private function getParams($routePath, $requestPath) {
+            51.          $routeParts = explode('/', trim($routePath, '/'));
+            52.          $requestParts = explode('/', trim($requestPath, '/'));
+            53.          $params = [];
+            54.  
+            55.          for ($i = 0; $i < count($routeParts); $i++) {
+            56.              if (substr($routeParts[$i], 0, 1) === '{') {
+            57.                  $paramName = trim($routeParts[$i], '{}');
+            58.                  $params[$paramName] = $requestParts[$i];
+            59.              }
+            60.          }
+            61.  
+            62.          return $params;
+            63.      }
+            64.  }
+            65.  ?>
