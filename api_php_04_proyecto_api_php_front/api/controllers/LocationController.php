@@ -19,27 +19,37 @@ class LocationController {
     }
 
     public function crearLocation($data) {
-        $name = $data['name'];
-        $city = $data['city'];
-        $state = $data['state'];
-        $photo = $data['photo'];
-        $availableUnits = $data['availableUnits'];
-        $wifi = $data['wifi'];
-        $laundry = $data['laundry'];
-        $resultado = $this->location->crear($name, $city, $state, $photo, $availableUnits, $wifi, $laundry);
-        echo json_encode(['success' => $resultado]);
+        if ($data) {
+            $name = $data['name'];
+            $city = $data['city'];
+            $state = $data['state'];
+            $photo = $data['photo'];
+            $availableUnits = $data['availableUnits'];
+            $wifi = $data['wifi'];
+            $laundry = $data['laundry'];
+            $resultado = $this->location->crear($name, $city, $state, $photo, $availableUnits, $wifi, $laundry);
+            echo json_encode(['success' => $resultado]);
+        } else {
+            http_response_code(400);
+            echo json_encode(['mensaje' => 'Datos inválidos']);
+        }
     }
 
     public function actualizarLocation($id, $data) {
-        $name = $data['name'];
-        $city = $data['city'];
-        $state = $data['state'];
-        $photo = $data['photo'];
-        $availableUnits = $data['availableUnits'];
-        $wifi = $data['wifi'];
-        $laundry = $data['laundry'];
-        $resultado = $this->location->actualizar($id, $name, $city, $state, $photo, $availableUnits, $wifi, $laundry);
-        echo json_encode(['success' => $resultado]);
+        if ($data && $id) {
+            $name = $data['name'];
+            $city = $data['city'];
+            $state = $data['state'];
+            $photo = $data['photo'];
+            $availableUnits = $data['availableUnits'];
+            $wifi = $data['wifi'];
+            $laundry = $data['laundry'];
+            $resultado = $this->location->actualizar($id, $name, $city, $state, $photo, $availableUnits, $wifi, $laundry);
+            echo json_encode(['success' => $resultado]);
+        } else {
+            http_response_code(400);
+            echo json_encode(['mensaje' => 'Datos inválidos']);
+        }
     }
 
     public function eliminarLocation($id) {
