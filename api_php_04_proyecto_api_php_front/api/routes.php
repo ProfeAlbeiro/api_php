@@ -1,9 +1,9 @@
 <?php
 require_once 'controllers/LocationController.php';
 require_once '../core/Router.php';
-require_once 'config/conexion.php'; // Incluir el archivo conexion.php
+require_once 'config/DataBase.php'; // Incluir el archivo conexion.php
 
-$conn = conexion(); // Obtener la conexión a la base de datos
+$conn = DataBase::conexion(); // Obtener la conexión a la base de datos
 //Verificamos que la conexion se realizo correctamente.
 if($conn){
 
