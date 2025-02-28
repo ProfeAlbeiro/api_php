@@ -94,17 +94,18 @@
             }
             break;
 
-        case 'DELETE':
-            try {
-                if (empty($body['id'])) {
-                    sendResponse(400, "ID de vivienda inválido");
+            case 'DELETE':
+                try {
+                    if (!isset($body['id'])) {
+                        sendResponse(400, "ID de vivienda inválido");
+                    }
+
+                    $location->deleteHousingLocation($body['id']);
+                    sendResponse(204, "Vivienda eliminada");
+                } catch (Exception $e) {
+                    sendResponse(500, "Error al eliminar vivienda: " . $e->getMessage());
                 }
-                $location->deleteHousingLocation($body['id']);
-                sendResponse(204, "Vivienda eliminada");
-            } catch (Exception $e) {
-                sendResponse(500, "Error al eliminar la vivienda: " . $e->getMessage());
-            }
-            break;
+                break;
 
         default:
             sendResponse(405, "Método no permitido");
