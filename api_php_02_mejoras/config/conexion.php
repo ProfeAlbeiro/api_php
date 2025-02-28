@@ -1,20 +1,20 @@
 <?php
-class Conectar{
+class Conectar
+{
     protected $dbh;
 
-    protected function Conexion(){
+    protected function Conexion() {
         try {
-            $conectar = $this->dbh = new PDO("mysql:local=localhost;dbname=adsoapi3","root","");
+            $conectar = $this->dbh = new PDO("mysql:local=localhost;dbname=adsoapi3", "root", "");
             return $conectar;
-            } catch (Exception $e) {
-                print "¡Error BD!: " . $e->getMessage() . "<br/>";
-                die();
-            }
+        } catch (Exception $e) {
+            print "¡Error BD!: " . $e->getMessage() . "<br/>";
+            die();
+        }
     }
 
-    public function set_names(){
+    public function set_names()
+    {
         return $this->dbh->query("SET NAMES 'utf8'");
     }
 }
-
-?>
