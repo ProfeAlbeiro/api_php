@@ -3,7 +3,7 @@ class Location {
     private $conn;
 
     public function __construct() {
-        $this->conn = DataBase::connection();
+        $this->conn = DbConn::connection();
     }
 
     public function getAllHousingLocations() {
@@ -18,7 +18,8 @@ class Location {
     }
 
     public function createHousingLocation($name, $city, $state, $photo, $availableUnits, $wifi, $laundry) {
-        $stmt = $this->conn->prepare("INSERT INTO locations (name, city, state, photo, availableUnits, wifi, laundry) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $this->conn->prepare("INSERT INTO locations (name, city, state, photo, availableUnits, wifi, laundry) 
+                                      VALUES (?, ?, ?, ?, ?, ?, ?)");
         return $stmt->execute([$name, $city, $state, $photo, $availableUnits, $wifi, $laundry]);
     }
 

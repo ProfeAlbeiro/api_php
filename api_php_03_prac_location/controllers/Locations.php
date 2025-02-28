@@ -1,7 +1,7 @@
 <?php
     header('Content-Type: application/json');
 
-    require_once "../config/DataBase.php";
+    require_once "../config/DbConn.php";
     require_once("../models/Location.php");
 
     $location = new Location;
@@ -34,22 +34,29 @@
             } else {
                 try {
                     $data = $location->getAllHousingLocations();
-                    sendResponse(200, "Ubicación de viviendas obtenidas", $data);
+                    sendResponse(200, "Viviendas y ubicación obtenidas", $data);
                 } catch (Exception $e) {
-                    sendResponse(500, "Error al obtener la ubicación de las viviendas: " . $e->getMessage());
+                    sendResponse(500, "Error al obtener viviendas y ubicación: " . $e->getMessage());
                 }
             }
             break;
 
         case 'POST':
             try {
-                if (empty($body['cat_nom']) || empty($body['cat_obs'])) {
-                    sendResponse(400, "datos de entrada inválidos");
+                if (empty($body['name']) || empty($body['city']) || empty($body['state']) || empty($body['photo']) || empty($body['availableUnits']) || !isset($body['wifi']) || !isset($body['laundry'])) {
+                    sendResponse(400, "Datos de entrada inválidos");
                 }
-                $data = $location->createHousingLocation($body['cat_nom'], $body['cat_obs']);
-                enviarRespuesta(201, "Categoría creada", $data); // 201 Created
+                $data = $location->createHousingLocation(
+                    $body['name'], 
+                    $body['city'], 
+                    $body['state'], 
+                    $body['photo'], 
+                    $body['availableUnits'], 
+                    $body['wifi'], 
+                    $body['laundry']);
+                sendResponse(201, "Vivienda  creada", $data);
             } catch (Exception $e) {
-                enviarRespuesta(500, "Error al crear la categoría: " . $e->getMessage());
+                sendResponse(500, "Error al crear la vivienda: " . $e->getMessage());
             }
             break;
 

@@ -1,5 +1,5 @@
 <?php
-    class DataBase{
+    class DbConn{
         #  Conexión Local
         public static function connection(){
             try {
