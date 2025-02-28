@@ -18,8 +18,8 @@ class Location {
     }
 
     public function createHousingLocation($name, $city, $state, $photo, $availableUnits, $wifi, $laundry) {
-        $stmt = $this->conn->prepare("INSERT INTO locations (name, city, state, photo, availableUnits, wifi, laundry) 
-                                      VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $this->conn->prepare("INSERT INTO locations (name, city, state, photo, availableUnits, wifi, laundry)
+                                        VALUES (?, ?, ?, ?, ?, ?, ?)");
         return $stmt->execute([$name, $city, $state, $photo, $availableUnits, $wifi, $laundry]);
     }
 

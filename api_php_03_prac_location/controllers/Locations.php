@@ -43,22 +43,22 @@
 
         case 'POST':
             try {
-                if (empty($body['name']) || 
-                    empty($body['city']) || 
-                    empty($body['state']) || 
-                    empty($body['photo']) || 
-                    empty($body['availableUnits']) || 
-                    !isset($body['wifi']) || 
+                if (empty($body['name']) ||
+                    empty($body['city']) ||
+                    empty($body['state']) ||
+                    empty($body['photo']) ||
+                    empty($body['availableUnits']) ||
+                    !isset($body['wifi']) ||
                     !isset($body['laundry'])) {
                         sendResponse(400, "Datos de entrada inválidos");
                 }
                 $data = $location->createHousingLocation(
-                            $body['name'], 
-                            $body['city'], 
-                            $body['state'], 
-                            $body['photo'], 
-                            $body['availableUnits'], 
-                            $body['wifi'], 
+                            $body['name'],
+                            $body['city'],
+                            $body['state'],
+                            $body['photo'],
+                            $body['availableUnits'],
+                            $body['wifi'],
                             $body['laundry']);
                 sendResponse(201, "Vivienda  creada", $data);
             } catch (Exception $e) {
@@ -66,51 +66,48 @@
             }
             break;
 
-        case 'PUT': // Actualizar una categoría existente
+        case 'PUT':
             try {
-                // Validar data de entrada
-                if (empty($body['id']) || 
-                    empty($body['name']) || 
-                    empty($body['city']) || 
-                    empty($body['state']) || 
-                    empty($body['photo']) || 
-                    empty($body['availableUnits']) || 
-                    !isset($body['wifi']) || 
+                if (empty($body['id']) ||
+                    empty($body['name']) ||
+                    empty($body['city']) ||
+                    empty($body['state']) ||
+                    empty($body['photo']) ||
+                    empty($body['availableUnits']) ||
+                    !isset($body['wifi']) ||
                     !isset($body['laundry'])) {
-                        sendResponse(400, "data de entrada inválidos");
+                        sendResponse(400, "Datos de entrada inválidos");
                 }
 
                 $data = $location->updateHousingLocation(
-                            $body['id'], 
-                            $body['name'], 
-                            $body['city'], 
-                            $body['state'], 
-                            $body['photo'], 
-                            $body['availableUnits'], 
-                            $body['wifi'], 
+                            $body['id'],
+                            $body['name'],
+                            $body['city'],
+                            $body['state'],
+                            $body['photo'],
+                            $body['availableUnits'],
+                            $body['wifi'],
                             $body['laundry']);
                 sendResponse(200, "Vivienda y ubicación actualizada", $data);
             } catch (Exception $e) {
-                enviarRespuesta(500, "Error al actualizar vivienda y la ubicación: " . $e->getMessage());
+                sendResponse(500, "Error al actualizar vivienda y ubicación: " . $e->getMessage());
             }
             break;
 
-        // case 'DELETE': // Eliminar una categoría
-        //     try {
-        //         // Validar data de entrada
-        //         if (empty($body['cat_id'])) {
-        //             enviarRespuesta(400, "ID de categoría inválido");
-        //         }
+        case 'DELETE':
+            try {
+                if (empty($body['id'])) {
+                    sendResponse(400, "ID de vivienda inválido");
+                }
+                $location->deleteHousingLocation($body['id']);
+                sendResponse(204, "Vivienda eliminada");
+            } catch (Exception $e) {
+                sendResponse(500, "Error al eliminar la vivienda: " . $e->getMessage());
+            }
+            break;
 
-        //         $categoria->delete_categoria($body['cat_id']);
-        //         enviarRespuesta(204, "Categoría eliminada"); // 204 No Content
-        //     } catch (Exception $e) {
-        //         enviarRespuesta(500, "Error al eliminar la categoría: " . $e->getMessage());
-        //     }
-        //     break;
-
-        // default:
-        //     enviarRespuesta(405, "Método no permitido"); // 405 Method Not Allowed
-        //     break;
+        default:
+            sendResponse(405, "Método no permitido");
+            break;
     }
 ?>
