@@ -1,0 +1,251 @@
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|----------------------------------------------------------------------------------- PROYECTO 02 -----------------------------------------------------------------------------------|
+|------------------------------------------------------------------------------- API - PHP - FRONTEND ------------------------------------------------------------------------------|
+|-- Autor: Albeiro Ramos. Instructor SENA ------------------------------------------------------------------------------------------------------------------------------------------|
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-- 01. Estructura del Proyecto: ---------------------------------------------------------------------------------------------------------------------------------------------------|
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+            mi-proyecto/                            #   Carpeta raíz del proyecto
+            ├── api/                                #   Contiene la lógica del backend (API REST).
+            │   ├── config/                         
+            │   │   └── conexion.php                #   Configuración de la conexión a la base de datos.
+            │   ├── models/                         
+            │   │   └── Location.php                #   Modelo de Datos del 'Location'
+            │   ├── controllers/                                
+            │   │   └── LocationController.php      #   Controlador del modelo 'Location' que maneja las solicitudes y respuestas de la API            
+            |   ├── routes.php                      #   Definición de las rutas de la API
+            │   └── index.php                       #   Entrada de la API
+            ├── frontend/                           #   Contiene el código del frontend
+            │   ├── assets/                         #   Recursos estáticos
+            │   │   ├── css/
+            │   │   │   └── estilos.css             #   Estilos CSS
+            │   │   ├── js/
+            │   │   │   └── app.js                  #   Scripts JS
+            │   │   └── images/                     
+            │   │       └── logo.png                #   Imagen que representa un logo
+            │   ├── views/                                      
+            │   │   └── location.php                #   Vista HTML de los 'location'
+            │   └── index.php                       #   Entrada principal del frontend
+            ├── config/                                
+            │   └── app.php                         #   Configuración general de la apliación
+            ├── public/
+            │   └── index.php                       #   Entrada principal de la aplicación (Redirige a 'frontend/index.php' o 'api/index.php')
+            ├── core /                              #   Dependencias composer
+                └── Router.php                      #   Maneja el enrutamiento de las solicitudes a los controladores.
+
+
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-- 02. api/: ----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+--- 02.01. config/conexion.php                      :   Establece la conexión a la base de datos utilizando PDO.            
+             
+             1.  <?php
+             2.      $servername = "localhost";
+             3.      $username = "usuario";
+             4.      $password = "contraseña";
+             5.      $dbname = "basededatos";
+             6.  
+             7.      try {
+             8.          $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+             9.          $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            10.          return $conn;
+            11.      } catch(PDOException $e) {
+            12.          echo "Error de conexión: " . $e->getMessage();
+            13.      }
+            14.  ?>
+
+--- 02.02. models/Location.php                      :   Define la clase 'Location' con métodos para interactuar con la tabla 'locations'.
+             
+             1.  <?php
+             2.  class Location {
+             3.      private $conn;
+             4.
+             5.      public function __construct($db) {
+             6.          $this->conn = $db;
+             7.      }
+             8.  
+             9.      public function obtenerTodos() {
+            10.          $stmt = $this->conn->query("SELECT * FROM locations");
+            11.          return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            12.      }
+            13.  
+            14.      public function obtenerPorId($id) {
+            15.          $stmt = $this->conn->prepare("SELECT * FROM locations WHERE id = ?");
+            16.          $stmt->execute([$id]);
+            17.          return $stmt->fetch(PDO::FETCH_ASSOC);
+            18.      }
+            19.  
+            20.      public function crear($name, $city, $state, $photo, $availableUnits, $wifi, $laundry) {
+            21.          $stmt = $this->conn->prepare("INSERT INTO locations (name, city, state, photo, availableUnits, wifi, laundry) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            22.          return $stmt->execute([$name, $city, $state, $photo, $availableUnits, $wifi, $laundry]);
+            23.      }
+            24.  
+            25.      public function actualizar($id, $name, $city, $state, $photo, $availableUnits, $wifi, $laundry) {
+            26.          $stmt = $this->conn->prepare("UPDATE locations SET name = ?, city = ?, state = ?, photo = ?, availableUnits = ?, wifi = ?, laundry = ? WHERE id = ?");
+            27.          return $stmt->execute([$name, $city, $state, $photo, $availableUnits, $wifi, $laundry, $id]);
+            28.      }
+            29.  
+            30.      public function eliminar($id) {
+            31.          $stmt = $this->conn->prepare("DELETE FROM locations WHERE id = ?");
+            32.          return $stmt->execute([$id]);
+            33.      }
+            34.  }
+            35.  ?>
+
+--- 02.03. controllers/LocationController.php       :   Maneja las solicitudes relacionadas con ubicaciones y llama a los métodos del modelo 'Location'.
+
+             1.  <?php
+             2.  require_once '../models/Location.php';
+             3.  
+             4.  class LocationController {
+             5.      private $location;
+             6.  
+             7.      public function __construct($db) {
+             8.          $this->location = new Location($db);
+             9.      }
+            10. 
+            11.      public function listarLocations() {
+            12.          $locations = $this->location->obtenerTodos();
+            13.          echo json_encode($locations);
+            14.      }
+            15.  
+            16.      public function obtenerLocation($id) {
+            17.          $location = $this->location->obtenerPorId($id);
+            18.          echo json_encode($location);
+            19.      }
+            20.  
+            21.      public function crearLocation($data) {
+            22.          $name = $data['name'];
+            23.          $city = $data['city'];
+            24.          $state = $data['state'];
+            25.          $photo = $data['photo'];
+            26.          $availableUnits = $data['availableUnits'];
+            27.          $wifi = $data['wifi'];
+            28.          $laundry = $data['laundry'];
+            29.          $resultado = $this->location->crear($name, $city, $state, $photo, $availableUnits, $wifi, $laundry);
+            30.          echo json_encode(['success' => $resultado]);
+            31.     }
+            32.  
+            33.     public function actualizarLocation($id, $data) {
+            34.          $name = $data['name'];
+            35.          $city = $data['city'];
+            36.          $state = $data['state'];
+            37.          $photo = $data['photo'];
+            38.          $availableUnits = $data['availableUnits'];
+            39.          $wifi = $data['wifi'];
+            40.          $laundry = $data['laundry'];
+            41.          $resultado = $this->location->actualizar($id, $name, $city, $state, $photo, $availableUnits, $wifi, $laundry);
+            42.          echo json_encode(['success' => $resultado]);
+            43.     }
+            44.  
+            45.     public function eliminarLocation($id) {
+            46.          $resultado = $this->location->eliminar($id);
+            47.          echo json_encode(['success' => $resultado]);
+            48.      }
+            49.  }
+            50.  ?>
+
+--- 02.04. routes.php                               :   Define las rutas de la API y las asocia con los métodos del controlador.
+
+             1.  <?php
+             2.  require_once 'controllers/LocationController.php';
+             3.  require_once '../core/Router.php';
+             4.  require_once '../config/conexion.php';
+             5.  
+             6.  $conn = conexion(); // Obtener la conexión a la base de datos
+             7.  
+             8.  $router = new Router();
+             9.  
+            10.  $router->addRoute('GET', '/locations', 'LocationController', 'listarLocations', $conn);
+            11.  $router->addRoute('GET', '/locations/{id}', 'LocationController', 'obtenerLocation', $conn);
+            12.  $router->addRoute('POST', '/locations', 'LocationController', 'crearLocation', $conn);
+            13.  $router->addRoute('PUT', '/locations/{id}', 'LocationController', 'actualizarLocation', $conn);
+            14.  $router->addRoute('DELETE', '/locations/{id}', 'LocationController', 'eliminarLocation', $conn);
+            15.  
+            16.  $router->route();
+            17.  ?>
+
+--- 02.05. index.php                               :   Punto de entrada principal de la API.
+
+             1.  <?php
+             2.  header('Content-Type: application/json');
+             3.  require_once 'routes.php';
+             4.  ?>
+
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-- 03. core/: -------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+--- 03.01. Router.php                               :   Maneja el enrutamiento de las solicitudes
+
+             1.  <?php
+             2.  class Router {
+             3.      private $routes = [];
+             4.  
+             5.      public function addRoute($method, $path, $controller, $action, $db) {
+             6.          $this->routes[] = [
+             7.              'method' => $method,
+             8.              'path' => $path,
+             9.              'controller' => $controller,
+            10.              'action' => $action,
+            11.              'db' => $db
+            12.          ];
+            13.      }
+            14.  
+            15.      public function route() {
+            16.          $method = $_SERVER['REQUEST_METHOD'];
+            17.          $path = $_SERVER['PATH_INFO'] ?? '/';
+            18.  
+            19.          foreach ($this->routes as $route) {
+            20.              if ($route['method'] === $method && $this->matchPath($route['path'], $path)) {
+            21.                  require_once 'controllers/' . $route['controller'] . '.php'; // Incluir el controlador
+            22.                  $controller = new $route['controller']($route['db']);
+            23.                  $action = $route['action'];
+            24.                  $controller->$action($this->getParams($route['path'], $path));
+            25.                  return;
+            26.              }
+            27.          }
+            28.  
+            29.          http_response_code(404);
+            30.          echo json_encode(['mensaje' => 'Ruta no encontrada']);
+            31.      }
+            32.  
+            33.      private function matchPath($routePath, $requestPath) {
+            34.          $routeParts = explode('/', trim($routePath, '/'));
+            35.          $requestParts = explode('/', trim($requestPath, '/'));
+            36.  
+            37.          if (count($routeParts) !== count($requestParts)) {
+            38.              return false;
+            39.          }
+            40.  
+            41.          for ($i = 0; $i < count($routeParts); $i++) {
+            42.              if ($routeParts[$i] !== $requestParts[$i] && substr($routeParts[$i], 0, 1) !== '{') {
+            43.                  return false;
+            44.              }
+            45.          }
+            46.  
+            47.          return true;
+            48.      }
+            49.  
+            50.      private function getParams($routePath, $requestPath) {
+            51.          $routeParts = explode('/', trim($routePath, '/'));
+            52.          $requestParts = explode('/', trim($requestPath, '/'));
+            53.          $params = [];
+            54.  
+            55.          for ($i = 0; $i < count($routeParts); $i++) {
+            56.              if (substr($routeParts[$i], 0, 1) === '{') {
+            57.                  $paramName = trim($routeParts[$i], '{}');
+            58.                  $params[$paramName] = $requestParts[$i];
+            59.              }
+            60.          }
+            61.  
+            62.          return $params;
+            63.      }
+            64.  }
+            65.  ?>
