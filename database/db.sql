@@ -2,12 +2,12 @@ CREATE DATABASE DB;
 USE DB;
 
 CREATE TABLE locations (
-    id INT PRIMARY KEY,
-    name VARCHAR(255),
-    city VARCHAR(255),
-    state VARCHAR(20),
-    photo VARCHAR(255),
-    availableUnits INT,
+    id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    city VARCHAR(255) NOT NULL,
+    state VARCHAR(20) NOT NULL,
+    photo VARCHAR(255) NOT NULL,
+    availableUnits INT NOT NULL,
     wifi BOOLEAN,
     laundry BOOLEAN
 );

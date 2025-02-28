@@ -7,10 +7,10 @@
     $location = new Location;
 
     // Función para manejar errores y enviar respuestas JSON consistentes
-    function sendResponse($codigo, $mensaje, $datos = null) {
-        http_response_code($codigo);
-        echo json_encode(['mensaje' => $mensaje, 'datos' => $datos]);
-        exit; // Detener la ejecución del script después de enviar la respuesta
+    function sendResponse($code, $message, $data = null) {
+        http_response_code($code);
+        echo json_encode(['message' => $message, 'datos' => $data]);
+        exit;
     }
 
     $body = json_decode(file_get_contents("php://input"), true);
@@ -19,51 +19,49 @@
     $method = $_SERVER['REQUEST_METHOD'];
 
     switch ($method) {
-        case 'GET': // Obtener categorías
-            if (isset($_GET['id'])) { // Obtener una categoría por ID
+        case 'GET':
+            if (isset($_GET['id'])) {
                 try {
-                    $datos = $location->getHousingLocationById($_GET['id']);
-                    if ($datos) {
-                        sendResponse(200, "Ubicación de vivienda obtenida", $datos);
+                    $data = $location->getHousingLocationById($_GET['id']);
+                    if ($data) {
+                        sendResponse(200, "Ubicación de vivienda obtenida", $data);
                     } else {
                         sendResponse(404, "Ubicación de vivienda no encontrada");
                     }
                 } catch (Exception $e) {
-                    sendResponse(500, "Error al obtener la categoría: " . $e->getMessage());
+                    sendResponse(500, "Error al obtener la vivienda: " . $e->getMessage());
                 }
-            } else { // Obtener todas las categorías
+            } else {
                 try {
-                    $datos = $location->getAllHousingLocations();
-                    sendResponse(200, "Ubicación de viviendas obtenidas", $datos);
+                    $data = $location->getAllHousingLocations();
+                    sendResponse(200, "Ubicación de viviendas obtenidas", $data);
                 } catch (Exception $e) {
                     sendResponse(500, "Error al obtener la ubicación de las viviendas: " . $e->getMessage());
                 }
             }
             break;
 
-        // case 'POST': // Insertar una nueva categoría
-        //     try {
-        //         // Validar datos de entrada
-        //         if (empty($body['cat_nom']) || empty($body['cat_obs'])) {
-        //             enviarRespuesta(400, "Datos de entrada inválidos");
-        //         }
-
-        //         $datos = $categoria->insert_categoria($body['cat_nom'], $body['cat_obs']);
-        //         enviarRespuesta(201, "Categoría creada", $datos); // 201 Created
-        //     } catch (Exception $e) {
-        //         enviarRespuesta(500, "Error al crear la categoría: " . $e->getMessage());
-        //     }
-        //     break;
+        case 'POST':
+            try {
+                if (empty($body['cat_nom']) || empty($body['cat_obs'])) {
+                    sendResponse(400, "datos de entrada inválidos");
+                }
+                $data = $location->createHousingLocation($body['cat_nom'], $body['cat_obs']);
+                enviarRespuesta(201, "Categoría creada", $data); // 201 Created
+            } catch (Exception $e) {
+                enviarRespuesta(500, "Error al crear la categoría: " . $e->getMessage());
+            }
+            break;
 
         // case 'PUT': // Actualizar una categoría existente
         //     try {
-        //         // Validar datos de entrada
+        //         // Validar data de entrada
         //         if (empty($body['cat_id']) || empty($body['cat_nom']) || empty($body['cat_obs'])) {
-        //             enviarRespuesta(400, "Datos de entrada inválidos");
+        //             enviarRespuesta(400, "data de entrada inválidos");
         //         }
 
-        //         $datos = $categoria->update_categoria($body['cat_id'], $body['cat_nom'], $body['cat_obs']);
-        //         enviarRespuesta(200, "Categoría actualizada", $datos);
+        //         $data = $categoria->update_categoria($body['cat_id'], $body['cat_nom'], $body['cat_obs']);
+        //         enviarRespuesta(200, "Categoría actualizada", $data);
         //     } catch (Exception $e) {
         //         enviarRespuesta(500, "Error al actualizar la categoría: " . $e->getMessage());
         //     }
@@ -71,7 +69,7 @@
 
         // case 'DELETE': // Eliminar una categoría
         //     try {
-        //         // Validar datos de entrada
+        //         // Validar data de entrada
         //         if (empty($body['cat_id'])) {
         //             enviarRespuesta(400, "ID de categoría inválido");
         //         }
