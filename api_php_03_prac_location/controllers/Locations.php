@@ -96,12 +96,13 @@
 
             case 'DELETE':
                 try {
-                    if (!isset($body['id'])) {
+                    // $id = intval($body['id']);
+                    if (empty($body['id'])) {
                         sendResponse(400, "ID de vivienda inválido");
                     }
 
                     $location->deleteHousingLocation($body['id']);
-                    sendResponse(204, "Vivienda eliminada");
+                    sendResponse(200, "Vivienda eliminada");
                 } catch (Exception $e) {
                     sendResponse(500, "Error al eliminar vivienda: " . $e->getMessage());
                 }
