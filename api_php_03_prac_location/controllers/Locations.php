@@ -96,7 +96,6 @@
 
             case 'DELETE':
                 try {
-                    // $id = intval($body['id']);
                     if (empty($body['id'])) {
                         sendResponse(400, "ID de vivienda inválido");
                     }
