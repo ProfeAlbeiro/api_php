@@ -1,4 +1,4 @@
 <?php
 header('Content-Type: application/json');
-require_once 'routes.php';
+require_once '../api/routes.php';
 ?>

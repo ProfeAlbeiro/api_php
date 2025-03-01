@@ -1,12 +1,11 @@
 <?php
-require_once 'controllers/LocationController.php';
+require_once '../api/controllers/LocationController.php';
 require_once '../core/Router.php';
-require_once 'config/DataBase.php'; // Incluir el archivo conexion.php
+require_once '../api/config/DbConn.php';
 
-$conn = DataBase::conexion(); // Obtener la conexión a la base de datos
-//Verificamos que la conexion se realizo correctamente.
-if($conn){
+$conn = DbConn::connection();
 
+if ($conn) {
     $router = new Router();
 
     $router->addRoute('GET', '/locations', 'LocationController', 'listarLocations', $conn);
@@ -16,6 +15,8 @@ if($conn){
     $router->addRoute('DELETE', '/locations/{id}', 'LocationController', 'eliminarLocation', $conn);
 
     $router->route();
+} else {
+    http_response_code(500);
+    echo json_encode(['mensaje' => 'Error de conexión a la base de datos']);
 }
-
 ?>

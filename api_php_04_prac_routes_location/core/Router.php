@@ -15,12 +15,12 @@ class Router {
     public function route() {
         $method = $_SERVER['REQUEST_METHOD'];
         $path = $_SERVER['PATH_INFO'] ?? '/';
-    
+
         foreach ($this->routes as $route) {
             if ($route['method'] === $method && $this->matchPath($route['path'], $path)) {
-                $controllerFile = 'controllers/' . $route['controller'] . '.php'; //Guardamos la ruta del controlador en una variable.
-                if (file_exists($controllerFile)) { //verificamos que exista el archivo.
-                    require_once $controllerFile; // Incluir el controlador
+                $controllerFile = 'controllers/' . $route['controller'] . '.php';
+                if (file_exists($controllerFile)) {
+                    require_once $controllerFile;
                     $controller = new $route['controller']($route['db']);
                     $action = $route['action'];
                     $controller->$action($this->getParams($route['path'], $path));
@@ -32,7 +32,7 @@ class Router {
                 }
             }
         }
-    
+
         http_response_code(404);
         echo json_encode(['mensaje' => 'Ruta no encontrada']);
     }
@@ -40,20 +40,20 @@ class Router {
     private function matchPath($routePath, $requestPath) {
         $routeParts = explode('/', trim($routePath, '/'));
         $requestParts = explode('/', trim($requestPath, '/'));
-    
+
         if (count($routeParts) !== count($requestParts)) {
             return false;
         }
-    
+
         for ($i = 0; $i < count($routeParts); $i++) {
             if (substr($routeParts[$i], 0, 1) === '{') {
-                continue; // Ignorar parámetros en la comparación
+                continue;
             }
             if ($routeParts[$i] !== $requestParts[$i]) {
                 return false;
             }
         }
-    
+
         return true;
     }
 
@@ -61,7 +61,7 @@ class Router {
         $routeParts = explode('/', trim($routePath, '/'));
         $requestParts = explode('/', trim($requestPath, '/'));
         $params = [];
-    
+
         for ($i = 0; $i < count($routeParts); $i++) {
             if (substr($routeParts[$i], 0, 1) === '{') {
                 $paramName = trim($routeParts[$i], '{}');
@@ -73,7 +73,6 @@ class Router {
         }else{
             return null;
         }
-    
     }
 }
 ?>
