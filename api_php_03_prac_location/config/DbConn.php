@@ -4,7 +4,7 @@
         public static function connection(){
             try {
                 $hostname = "localhost";
-                $port = "3306";
+                $port = "3307";
                 $database = "db";
                 $username = "root";
                 $password = "";
